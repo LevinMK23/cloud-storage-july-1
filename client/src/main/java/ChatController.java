@@ -1,5 +1,4 @@
-package io;
-
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -35,6 +34,9 @@ public class ChatController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         buffer = new byte[256];
         try {
+            File dir = new File("./");
+            listView.getItems().clear();
+            listView.getItems().addAll(dir.list());
             Socket socket = new Socket("localhost", 8189);
             is = socket.getInputStream();
             os = socket.getOutputStream();
