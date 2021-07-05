@@ -1,14 +1,16 @@
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 
 public class ChatHandler implements Runnable {
 
+    private String root = "server/serverFiles";
     private Socket socket;
-    private byte [] buffer;
-    private InputStream is;
-    private OutputStream os;
+    private byte[] buffer;
+    private DataInputStream is;
+    private DataOutputStream os;
 
     public ChatHandler(Socket socket) {
         this.socket = socket;
@@ -18,16 +20,13 @@ public class ChatHandler implements Runnable {
     @Override
     public void run() {
         try {
-            is = socket.getInputStream();
-            os = socket.getOutputStream();
+            is = new DataInputStream(socket.getInputStream());
+            os = new DataOutputStream(socket.getOutputStream());
             while (true) {
-                int read = is.read(buffer);
-                System.out.println("Received: " + new String(buffer, 0, read));
-                os.write(buffer, 0, read);
-                os.flush();
+                processFileMessage();
             }
         } catch (Exception e) {
-            System.err.println("Client connection exception");
+            e.printStackTrace();
         } finally {
             try {
                 is.close();
@@ -36,5 +35,25 @@ public class ChatHandler implements Runnable {
                 ioException.printStackTrace();
             }
         }
+    }
+
+    public void processFileMessage() throws IOException {
+
+        String fileName = is.readUTF();
+        System.out.println("Received fileName: " + fileName);
+        long size = is.readLong();
+
+        System.out.println("Received fileSize: " + size);
+        try(FileOutputStream fos = new FileOutputStream(root + "/" + fileName)) {
+            for (int i = 0; i < (size + 255) / 256; i++) {
+                int read = is.read(buffer);
+                fos.write(buffer, 0, read);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        os.writeUTF("File: " + fileName + " received");
+
     }
 }
