@@ -8,7 +8,8 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
-import model.Message;
+import model.AbstractCommand;
+import model.ListRequest;
 
 public class NettyNetwork {
 
@@ -30,12 +31,13 @@ public class NettyNetwork {
                                 c.pipeline().addLast(
                                         new ObjectEncoder(),
                                         new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
-                                        new ClientMessageHandler(callBack)
+                                        new ClientCommandHandler(callBack)
                                 );
                             }
                         });
 
                 ChannelFuture future = bootstrap.connect("localhost", 8189).sync();
+                writeMessage(new ListRequest());
                 future.channel().closeFuture().sync();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -47,7 +49,7 @@ public class NettyNetwork {
         thread.start();
     }
 
-    public void writeMessage(Message message) {
+    public void writeMessage(AbstractCommand message) {
         channel.writeAndFlush(message);
     }
 }

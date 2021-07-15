@@ -1,7 +1,7 @@
-import model.Message;
+import model.AbstractCommand;
 
 public interface CallBack {
 
-    void call(Message s);
+    void call(AbstractCommand command);
 
 }
